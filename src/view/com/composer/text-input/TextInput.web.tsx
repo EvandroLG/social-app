@@ -251,22 +251,31 @@ export const TextInput = React.forwardRef(function TextInputImpl(
   )
 })
 
-function editorJsonToText(json: JSONContent): string {
+export function editorJsonToText(json: JSONContent): string {
   let text = ''
-  if (json.type === 'doc' || json.type === 'paragraph') {
-    if (json.content?.length) {
-      for (const node of json.content) {
-        text += editorJsonToText(node)
+  const stack = [json]
+
+  while (stack.length) {
+    const node = stack.pop() as JSONContent
+
+    if (node.type === 'doc' || node.type === 'paragraph') {
+      if (node.content?.length) {
+        for (let i = node.content.length - 1; i >= 0; i--) {
+          const child = node.content[i]
+          stack.push(child)
+        }
       }
+
+      text += '\n'
+    } else if (node.type === 'hardBreak') {
+      text += '\n'
+    } else if (node.type === 'text') {
+      text += node.text || ''
+    } else if (node.type === 'mention') {
+      text += `@${node.attrs?.id || ''}`
     }
-    text += '\n'
-  } else if (json.type === 'hardBreak') {
-    text += '\n'
-  } else if (json.type === 'text') {
-    text += json.text || ''
-  } else if (json.type === 'mention') {
-    text += `@${json.attrs?.id || ''}`
   }
+
   return text
 }
 
