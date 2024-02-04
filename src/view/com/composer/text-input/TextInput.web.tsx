@@ -179,7 +179,7 @@ export const TextInput = React.forwardRef(function TextInputImpl(
       onUpdate({editor: editorProp}) {
         const json = editorProp.getJSON()
 
-        const newRt = new RichText({text: editorJsonToText(json).trimEnd()})
+        const newRt = new RichText({text: editorJsonToText(json)})
         newRt.detectFacetsWithoutResolution()
         setRichText(newRt)
 
@@ -253,25 +253,24 @@ export const TextInput = React.forwardRef(function TextInputImpl(
 
 export function editorJsonToText(json: JSONContent): string {
   let text = ''
-  const stack = [json]
+  const stack: JSONContent[] = [json]
 
-  while (stack.length) {
-    const node = stack.pop() as JSONContent
+  while (stack.length > 0) {
+    const node = stack.pop()
 
-    if (node.type === 'doc' || node.type === 'paragraph') {
-      if (node.content?.length) {
-        for (let i = node.content.length - 1; i >= 0; i--) {
-          const child = node.content[i]
-          stack.push(child)
-        }
+    if (node?.type === 'doc' || node?.type === 'paragraph') {
+      if (text !== '') {
+        text += '\n'
       }
 
+      if (node.content?.length) {
+        stack.push(...node.content.reverse())
+      }
+    } else if (node?.type === 'hardBreak') {
       text += '\n'
-    } else if (node.type === 'hardBreak') {
-      text += '\n'
-    } else if (node.type === 'text') {
+    } else if (node?.type === 'text') {
       text += node.text || ''
-    } else if (node.type === 'mention') {
+    } else if (node?.type === 'mention') {
       text += `@${node.attrs?.id || ''}`
     }
   }

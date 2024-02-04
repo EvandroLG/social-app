@@ -73,8 +73,11 @@ test('converts editor JSON to text', () => {
   }
 
   const result = editorJsonToText(data)
-
   expect(result).toBe(
-    'This is a sample document.\nA new line after the hard break. Here is a @user123.\nSome formatted text with bold and italic styles.\n\n',
+    [
+      'This is a sample document.\n',
+      'A new line after the hard break. Here is a @user123.\n',
+      'Some formatted text with bold and italic styles.',
+    ].join(''),
   )
 })
